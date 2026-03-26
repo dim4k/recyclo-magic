@@ -145,27 +145,37 @@ export default function CameraScreen() {
     const router = useRouter();
     const setCapturedImage = useStore((state) => state.setCapturedImage);
     const [captured, setCaptured] = useState(false);
+    const [facingMode, setFacingMode] = useState<"environment" | "user">(
+        "environment",
+    );
+
+    const startCamera = useCallback(async (mode: "environment" | "user") => {
+        // Stop existing stream
+        streamRef.current?.getTracks().forEach((t) => t.stop());
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: mode } },
+                audio: false,
+            });
+            streamRef.current = stream;
+            if (videoRef.current) videoRef.current.srcObject = stream;
+        } catch (e) {
+            console.error(e);
+        }
+    }, []);
 
     useEffect(() => {
-        let active = true;
-        navigator.mediaDevices
-            .getUserMedia({
-                video: { facingMode: { ideal: "environment" } },
-                audio: false,
-            })
-            .then((stream) => {
-                if (!active) {
-                    stream.getTracks().forEach((t) => t.stop());
-                    return;
-                }
-                streamRef.current = stream;
-                if (videoRef.current) videoRef.current.srcObject = stream;
-            })
-            .catch(console.error);
+        startCamera(facingMode);
         return () => {
-            active = false;
             streamRef.current?.getTracks().forEach((t) => t.stop());
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [facingMode]);
+
+    const flipCamera = useCallback(() => {
+        setFacingMode((prev) =>
+            prev === "environment" ? "user" : "environment",
+        );
     }, []);
 
     const capture = useCallback(async () => {
@@ -178,11 +188,13 @@ export default function CameraScreen() {
             setTimeout(() => router.push("/transform"), 1200);
         };
 
-        // Draw from the <video> element — browser handles orientation correctly
+        // Pause briefly so the GPU flushes the current frame to memory
+        // This fixes the black frame issue with hardware-decoded rear cameras on Android
+        video.pause();
+        await new Promise((r) => setTimeout(r, 80));
+
         const rawW = video.videoWidth || 640;
         const rawH = video.videoHeight || 480;
-
-        // Cap at 1024px on the longest side to keep API payload reasonable
         const MAX = 1024;
         const scale = Math.min(1, MAX / Math.max(rawW, rawH));
         const w = Math.round(rawW * scale);
@@ -191,9 +203,13 @@ export default function CameraScreen() {
         const canvas = document.createElement("canvas");
         canvas.width = w;
         canvas.height = h;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) {
+            video.play();
+            return;
+        }
         ctx.drawImage(video, 0, 0, w, h);
+        video.play();
         doCapture(canvas.toDataURL("image/jpeg", 0.85));
     }, [router, setCapturedImage]);
 
@@ -224,6 +240,14 @@ export default function CameraScreen() {
                 >
                     🪄
                 </motion.div>
+                <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={flipCamera}
+                    className="text-white bg-white/10 backdrop-blur-md p-3 rounded-full border border-white/30 shadow-lg text-xl"
+                    title="Changer de caméra"
+                >
+                    🔄
+                </motion.button>
             </div>
 
             {/* Cute header text */}

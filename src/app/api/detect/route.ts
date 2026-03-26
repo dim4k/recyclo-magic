@@ -55,6 +55,13 @@ Ne renvoie aucune autre phrase, ni ponctuation. JUSTE LE MOT EXACT.`;
             "",
         );
 
+        // Détecter le vrai mimeType depuis le data URL
+        const mimeMatch = imageBase64.match(/^data:(image\/[a-z+]+);base64,/);
+        const mimeType = mimeMatch ? mimeMatch[1] : "image/jpeg";
+        console.log(
+            `[detect] image size: ${Math.round(base64Data.length / 1024)}KB, mimeType: ${mimeType}`,
+        );
+
         const response = await ai.models.generateContent({
             model: "gemini-3-flash-preview",
             contents: [
@@ -63,7 +70,10 @@ Ne renvoie aucune autre phrase, ni ponctuation. JUSTE LE MOT EXACT.`;
                     parts: [
                         {
                             inlineData: {
-                                mimeType: "image/jpeg",
+                                mimeType: mimeType as
+                                    | "image/jpeg"
+                                    | "image/png"
+                                    | "image/webp",
                                 data: base64Data,
                             },
                         },
@@ -78,6 +88,7 @@ Ne renvoie aucune autre phrase, ni ponctuation. JUSTE LE MOT EXACT.`;
         if (typeof textValue === "string") {
             rawText = textValue.trim();
         }
+        console.log(`[detect] Gemini raw response: "${rawText}"`);
 
         // Vérifier si la réponse de l'IA fait bien partie de nos dossiers (en enlevant les retours à la ligne éventuels)
         const matchedCategory =
