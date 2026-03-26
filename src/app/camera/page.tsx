@@ -169,36 +169,32 @@ export default function CameraScreen() {
     }, []);
 
     const capture = useCallback(async () => {
-        const stream = streamRef.current;
-        if (!stream) return;
+        const video = videoRef.current;
+        if (!video || video.readyState < 2) return;
+
         const doCapture = (imageSrc: string) => {
             setCaptured(true);
             setCapturedImage(imageSrc);
             setTimeout(() => router.push("/transform"), 1200);
         };
-        const track = stream.getVideoTracks()[0];
-        if (track && "ImageCapture" in window) {
-            try {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const ic = new (window as any).ImageCapture(track);
-                const blob: Blob = await ic.takePhoto();
-                const reader = new FileReader();
-                reader.onloadend = () => doCapture(reader.result as string);
-                reader.readAsDataURL(blob);
-                return;
-            } catch (e) {
-                console.warn("ImageCapture failed, falling back to canvas", e);
-            }
-        }
-        const video = videoRef.current;
-        if (!video || video.readyState < 2) return;
+
+        // Draw from the <video> element — browser handles orientation correctly
+        const rawW = video.videoWidth || 640;
+        const rawH = video.videoHeight || 480;
+
+        // Cap at 1024px on the longest side to keep API payload reasonable
+        const MAX = 1024;
+        const scale = Math.min(1, MAX / Math.max(rawW, rawH));
+        const w = Math.round(rawW * scale);
+        const h = Math.round(rawH * scale);
+
         const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth || 640;
-        canvas.height = video.videoHeight || 480;
+        canvas.width = w;
+        canvas.height = h;
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
-        ctx.drawImage(video, 0, 0);
-        doCapture(canvas.toDataURL("image/jpeg", 0.92));
+        ctx.drawImage(video, 0, 0, w, h);
+        doCapture(canvas.toDataURL("image/jpeg", 0.85));
     }, [router, setCapturedImage]);
 
     return (
