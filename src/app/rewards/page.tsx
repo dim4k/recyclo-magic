@@ -36,10 +36,13 @@ export default function RewardsScreen() {
     const addCreation = useStore((state) => state.addCreation);
     const detectedCategory = useStore((state) => state.detectedCategory);
     const selectedPurpose = useStore((state) => state.selectedPurpose);
-    const setSelectedBeneficiary = useStore((state) => state.setSelectedBeneficiary);
+    const setSelectedBeneficiary = useStore(
+        (state) => state.setSelectedBeneficiary,
+    );
 
     const [imagePath, setImagePath] = useState<string>("");
-    const [localBeneficiary, setLocalBeneficiary] = useState<Beneficiary | null>(null);
+    const [localBeneficiary, setLocalBeneficiary] =
+        useState<Beneficiary | null>(null);
     const [showSending, setShowSending] = useState(false);
     const creationSaved = useRef(false);
 
@@ -57,7 +60,9 @@ export default function RewardsScreen() {
             router.replace("/home");
             return;
         }
-        fetch(`/api/result-image?category=${detectedCategory}&purpose=${selectedPurpose}`)
+        fetch(
+            `/api/result-image?category=${detectedCategory}&purpose=${selectedPurpose}`,
+        )
             .then((res) => res.json())
             .then((data) => setImagePath(data.image || fallback))
             .catch(() => setImagePath(fallback));
@@ -79,26 +84,82 @@ export default function RewardsScreen() {
         setShowSending(true);
     };
 
-    const categoryName = categoryLabels[detectedCategory || ""] || detectedCategory || "ton déchet";
+    const categoryName =
+        categoryLabels[detectedCategory || ""] ||
+        detectedCategory ||
+        "ton déchet";
     const purposeName = purposeLabels[selectedPurpose] || selectedPurpose;
 
     // Pegasus sending video overlay
     if (showSending) {
         return (
-            <div className="fixed inset-0 z-[9999] overflow-hidden" style={{ background: "linear-gradient(135deg, #a855f7, #ec4899, #f59e0b, #06b6d4)" }}>
-                {[{ size: 180, x: "10%", y: "5%", color: "#f472b6", delay: 0, dur: 4 },
-                  { size: 120, x: "70%", y: "10%", color: "#fbbf24", delay: 0.5, dur: 5 },
-                  { size: 200, x: "80%", y: "60%", color: "#818cf8", delay: 1, dur: 3.5 },
-                  { size: 140, x: "5%", y: "70%", color: "#34d399", delay: 0.3, dur: 4.5 },
+            <div
+                className="fixed inset-0 z-[9999] overflow-hidden"
+                style={{
+                    background:
+                        "linear-gradient(135deg, #a855f7, #ec4899, #f59e0b, #06b6d4)",
+                }}
+            >
+                {[
+                    {
+                        size: 180,
+                        x: "10%",
+                        y: "5%",
+                        color: "#f472b6",
+                        delay: 0,
+                        dur: 4,
+                    },
+                    {
+                        size: 120,
+                        x: "70%",
+                        y: "10%",
+                        color: "#fbbf24",
+                        delay: 0.5,
+                        dur: 5,
+                    },
+                    {
+                        size: 200,
+                        x: "80%",
+                        y: "60%",
+                        color: "#818cf8",
+                        delay: 1,
+                        dur: 3.5,
+                    },
+                    {
+                        size: 140,
+                        x: "5%",
+                        y: "70%",
+                        color: "#34d399",
+                        delay: 0.3,
+                        dur: 4.5,
+                    },
                 ].map((b, i) => (
-                    <motion.div key={i} className="absolute rounded-full opacity-40 blur-2xl"
-                        style={{ width: b.size, height: b.size, left: b.x, top: b.y, background: b.color }}
-                        animate={{ scale: [1, 1.3, 1], x: [0, 20, -20, 0], y: [0, -20, 20, 0] }}
-                        transition={{ duration: b.dur, repeat: Infinity, delay: b.delay, ease: "easeInOut" }}
+                    <motion.div
+                        key={i}
+                        className="absolute rounded-full opacity-40 blur-2xl"
+                        style={{
+                            width: b.size,
+                            height: b.size,
+                            left: b.x,
+                            top: b.y,
+                            background: b.color,
+                        }}
+                        animate={{
+                            scale: [1, 1.3, 1],
+                            x: [0, 20, -20, 0],
+                            y: [0, -20, 20, 0],
+                        }}
+                        transition={{
+                            duration: b.dur,
+                            repeat: Infinity,
+                            delay: b.delay,
+                            ease: "easeInOut",
+                        }}
                     />
                 ))}
 
-                <motion.div className="absolute top-8 left-0 right-0 text-center z-10"
+                <motion.div
+                    className="absolute top-8 left-0 right-0 text-center z-10"
                     animate={{ scale: [1, 1.05, 1], opacity: [0.8, 1, 0.8] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                 >
@@ -120,7 +181,13 @@ export default function RewardsScreen() {
                             autoPlay
                             playsInline
                             muted={false}
-                            style={{ display: "block", maxWidth: "100%", maxHeight: "70vh", width: "auto", height: "auto" }}
+                            style={{
+                                display: "block",
+                                maxWidth: "100%",
+                                maxHeight: "70vh",
+                                width: "auto",
+                                height: "auto",
+                            }}
                             onEnded={() => router.push("/confirmation")}
                         />
                     </motion.div>
@@ -155,7 +222,11 @@ export default function RewardsScreen() {
                 <div className="relative w-full max-w-sm aspect-square rounded-[3rem] p-4 bg-white/20 backdrop-blur-md border-4 border-white/50 shadow-2xl">
                     <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden border-4 border-white shadow-inner bg-black/10 flex flex-col items-center justify-center">
                         {imagePath ? (
-                            <img src={imagePath} alt="Transformation Result" className="object-cover w-full h-full" />
+                            <img
+                                src={imagePath}
+                                alt="Transformation Result"
+                                className="object-cover w-full h-full"
+                            />
                         ) : (
                             <Star className="w-16 h-16 text-white animate-spin opacity-50" />
                         )}
@@ -183,12 +254,14 @@ export default function RewardsScreen() {
                                 className={`flex flex-col items-center justify-center p-3 rounded-2xl border-4 transition-all duration-300
                                     ${
                                         localBeneficiary === b.id
-                                            ? "border-yellow-400 bg-white/40 scale-110 shadow-[0_0_20px_rgba(250,204,21,0.5)]"
-                                            : "border-white/40 bg-white/20 hover:bg-white/30"
+                                            ? "border-yellow-400 bg-white scale-110 shadow-[0_0_20px_rgba(250,204,21,0.5)]"
+                                            : "border-white/60 bg-white/90 hover:bg-white"
                                     }`}
                             >
                                 <span className="text-4xl mb-1">{b.icon}</span>
-                                <span className="text-xs font-bold text-white text-center leading-tight">{b.label}</span>
+                                <span className="text-xs font-black text-purple-900 text-center leading-tight">
+                                    {b.label}
+                                </span>
                             </button>
                         ))}
                     </div>

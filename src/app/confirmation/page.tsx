@@ -68,13 +68,22 @@ export default function ConfirmationScreen() {
     }, []);
 
     const handleShare = async () => {
-        const categoryName = categoryLabels[detectedCategory || ""] || detectedCategory || "un déchet";
+        const categoryName =
+            categoryLabels[detectedCategory || ""] ||
+            detectedCategory ||
+            "un déchet";
         const purposeName = purposeLabels[selectedPurpose] || selectedPurpose;
         const text = `🎉 ${userName} vient de transformer ${categoryName} en ${purposeName} avec Recyclo Magix ! Joue toi aussi !`;
         if (navigator.share) {
             try {
-                await navigator.share({ title: "Recyclo Magix 🌱", text, url: window.location.origin });
-            } catch { /* cancelled */ }
+                await navigator.share({
+                    title: "Recyclo Magix 🌱",
+                    text,
+                    url: window.location.origin,
+                });
+            } catch {
+                /* cancelled */
+            }
         } else {
             await navigator.clipboard.writeText(text);
             setShared(true);
@@ -82,8 +91,12 @@ export default function ConfirmationScreen() {
         }
     };
 
-    const forWhom = beneficiaryLabels[selectedBeneficiary || ""] || "quelqu'un de spécial";
-    const purposeName = purposeLabels[selectedPurpose] || selectedPurpose || "quelque chose de magique";
+    const forWhom =
+        beneficiaryLabels[selectedBeneficiary || ""] || "quelqu'un de spécial";
+    const purposeName =
+        purposeLabels[selectedPurpose] ||
+        selectedPurpose ||
+        "quelque chose de magique";
 
     return (
         <div className="flex flex-col min-h-screen p-6 overflow-hidden relative items-center justify-center">
@@ -106,9 +119,19 @@ export default function ConfirmationScreen() {
                 <motion.div
                     key={i}
                     className="absolute rounded-full opacity-30 blur-3xl pointer-events-none"
-                    style={{ width: b.size, height: b.size, left: b.x, top: b.y, background: b.color }}
+                    style={{
+                        width: b.size,
+                        height: b.size,
+                        left: b.x,
+                        top: b.y,
+                        background: b.color,
+                    }}
                     animate={{ scale: [1, 1.2, 1], x: [0, 15, -15, 0] }}
-                    transition={{ duration: 4 + i, repeat: Infinity, ease: "easeInOut" }}
+                    transition={{
+                        duration: 4 + i,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                    }}
                 />
             ))}
 
@@ -186,7 +209,9 @@ export default function ConfirmationScreen() {
                     className="btn-3d w-full py-5 text-2xl font-black rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white flex items-center justify-center space-x-3 shadow-xl"
                 >
                     <Home className="w-8 h-8" />
-                    <span className="tracking-wider text-stroke-sm">RETOURNER JOUER</span>
+                    <span className="tracking-wider text-stroke-sm">
+                        RETOURNER JOUER
+                    </span>
                 </button>
             </motion.div>
         </div>
