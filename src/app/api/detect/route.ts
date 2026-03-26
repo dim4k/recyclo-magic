@@ -74,10 +74,9 @@ Ne renvoie aucune autre phrase, ni ponctuation. JUSTE LE MOT EXACT.`;
         });
 
         let rawText = "other";
-        if (typeof response.text === "function") {
-            rawText = response.text().trim();
-        } else if (typeof response.text === "string") {
-            rawText = response.text.trim();
+        const textValue = response.text;
+        if (typeof textValue === "string") {
+            rawText = textValue.trim();
         }
 
         // Vérifier si la réponse de l'IA fait bien partie de nos dossiers (en enlevant les retours à la ligne éventuels)
